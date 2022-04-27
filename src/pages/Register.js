@@ -16,27 +16,37 @@ const initialState = {
 };
 
 const Register = () => {
+  // Con este useState manejo los inputs
   const [values, setValues] = useState(initialState);
-  // global state and useNavigate
 
-  const { isLoading, showAlert, displayAlert } = useAppContext();
+  // Con este useAppContext manejo los estados globales
+  const { isLoading, showAlert, displayAlert, registerUser } = useAppContext();
 
+  // Esto cambiar de Login a Register
   const toggleMember = () => {
     setValues({ ...values, isMember: !values.isMember });
   };
 
+  // Manejo los cambios en los inputs y los mando al useState
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
+  // Manejo el boton submit del Form
   const onSubmit = (e) => {
     e.preventDefault();
     const { name, email, password, password1, isMember } = values;
     if (!email || !password || (!isMember && (!name || !password1))) {
-      displayAlert('Por favor complete todo el formulario');
+      displayAlert("Complete todo el formulario!!");
       return;
     }
-    console.log(values);
+    const currentUser = { name, email, password };
+    // isMember me indica si estoy en Login o en Register
+    if (isMember) {
+      console.log("already a member");
+    } else {
+      registerUser(currentUser);
+    }
   };
 
   return (
@@ -58,8 +68,8 @@ const Register = () => {
           type="email"
           name="email"
           value={values.email}
-          handleChange={handleChange}
           labelText="email"
+          handleChange={handleChange}
         />
         <FormRow
           type="password"
@@ -78,7 +88,7 @@ const Register = () => {
             labelText="confirm password"
           />
         )}
-        <button type="submit" className="btn btn-block">
+        <button type="submit" className="btn btn-block" disabled={isLoading}>
           submit
         </button>
         {/* toggle Login Register y la leyenda del parrafo */}
