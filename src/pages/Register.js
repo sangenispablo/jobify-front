@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Logo, FormRow, Alert } from "../components";
 import { useAppContext } from "../context/appContext";
@@ -18,9 +19,10 @@ const initialState = {
 const Register = () => {
   // Con este useState manejo los inputs
   const [values, setValues] = useState(initialState);
-
+  const navigate = useNavigate();
   // Con este useAppContext manejo los estados globales
-  const { isLoading, showAlert, displayAlert, registerUser } = useAppContext();
+  const { user, isLoading, showAlert, displayAlert, registerUser } =
+    useAppContext();
 
   // Esto cambiar de Login a Register
   const toggleMember = () => {
@@ -48,6 +50,14 @@ const Register = () => {
       registerUser(currentUser);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    }
+  }, [user, navigate]);
 
   return (
     <Wrapper className="full-page">
