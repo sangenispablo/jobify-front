@@ -53,9 +53,10 @@ const Register = () => {
 
   useEffect(() => {
     if (user) {
+      // demoro unos 2 segundo el redirect se lo puede hacer al toque
       setTimeout(() => {
         navigate("/");
-      }, 2000);
+      }, 500);
     }
   }, [user, navigate]);
 
