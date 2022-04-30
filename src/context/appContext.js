@@ -10,6 +10,9 @@ import {
   LOGIN_USER_BEGIN,
   LOGIN_USER_SUCCESS,
   LOGIN_USER_ERROR,
+  SETUP_USER_BEGIN,
+  SETUP_USER_SUCCESS,
+  SETUP_USER_ERROR,
 } from "./actions";
 
 // en el reducer donde se produce todas las modificaciones del state
@@ -68,7 +71,7 @@ const AppProvider = ({ children }) => {
   const registerUser = async (currentUser) => {
     dispatch({ type: REGISTER_USER_BEGIN });
     try {
-      const { data } = await axios.post("/api/v1/auth/register", currentUser);            
+      const { data } = await axios.post("/api/v1/auth/register", currentUser);
       const { user, token } = data;
       const location = user.location;
       dispatch({
@@ -116,9 +119,37 @@ const AppProvider = ({ children }) => {
     }, 1800);
   };
 
+  const setupUser = async (currentUser, endPoint, alertText) => {
+    dispatch({ type: SETUP_USER_BEGIN });
+    try {
+      const { data } = await axios.post(
+        `/api/v1/auth/${endPoint}`,
+        currentUser
+      );
+      const { user, token } = data;
+      const location = user.location;
+      dispatch({
+        type: SETUP_USER_SUCCESS,
+        payload: { user, token, location, alertText },
+      });
+      // guardo en el LS los datos del usuario y del contexto
+      addUserLocalStorage({ user, token, location });
+    } catch (error) {
+      dispatch({
+        type: SETUP_USER_ERROR,
+        payload: { msg: error.response.data.msg },
+      });
+    }
+    setTimeout(() => {
+      dispatch({
+        type: CLEAR_ALERT,
+      });
+    }, 1800);
+  };
+
   return (
     <AppContext.Provider
-      value={{ ...state, displayAlert, registerUser, loginUser }}
+      value={{ ...state, displayAlert, registerUser, loginUser, setupUser }}
     >
       {children}
     </AppContext.Provider>

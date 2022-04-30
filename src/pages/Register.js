@@ -21,7 +21,7 @@ const Register = () => {
   const [values, setValues] = useState(initialState);
   const navigate = useNavigate();
   // Con este useAppContext manejo los estados globales
-  const { user, isLoading, showAlert, displayAlert, registerUser, loginUser } =
+  const { user, isLoading, showAlert, displayAlert, setupUser } =
     useAppContext();
 
   // Esto cambiar de Login a Register
@@ -45,9 +45,9 @@ const Register = () => {
     const currentUser = { name, email, password };
     // isMember me indica si estoy en Login o en Register
     if (isMember) {
-      loginUser(currentUser);
+      setupUser(currentUser, "login", "Login Successful! Redirecting...");
     } else {
-      registerUser(currentUser);
+      setupUser(currentUser, "register", "User Created! Redirecting...");
     }
   };
 
