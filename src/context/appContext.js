@@ -17,7 +17,7 @@ import {
   LOGOUT_USER,
   UPDATE_USER_BEGIN,
   UPDATE_USER_SUCCESS,
-  UPDATE_USER_ERROR
+  UPDATE_USER_ERROR,
 } from "./actions";
 
 // en el reducer donde se produce todas las modificaciones del state
@@ -49,6 +49,33 @@ const AppContext = React.createContext();
 // a los datos del context
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  // axios
+  const authFetch = axios.create({ baseURL: "/api/v1" });
+  // agrego un interception para request es decir antes de mandar el pedido
+  authFetch.interceptors.request.use(
+    (config) => {
+      config.headers.common["Authorization"] = `Bearer ${state.token}`;
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
+  // agrego un interception para response es decir antes de recibir la peticion
+  authFetch.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      console.log(error.response);
+      if (error.response.status === 401) {
+        console.log("AUTH ERROR");
+      }
+      return Promise.reject(error);
+    }
+  );
 
   // Muestra y oculta el alert luego de 1.8 seg
   const displayAlert = (texto = "Error") => {
@@ -163,30 +190,12 @@ const AppProvider = ({ children }) => {
   };
 
   const updateUser = async (currentUser) => {
-    dispatch({ type: UPDATE_USER_BEGIN });
     try {
-      const { data } = await authFetch.patch("/auth/updateUser", currentUser);
-
-      const { user, location, token } = data;
-
-      dispatch({
-        type: UPDATE_USER_SUCCESS,
-        payload: { user, location, token },
-      });
-      addUserToLocalStorage({ user, location, token });
+      const { data } = await authFetch.put("/auth/updateUser", currentUser);
+      console.log(data);
     } catch (error) {
-      if (error.response.status !== 401) {
-        dispatch({
-          type: UPDATE_USER_ERROR,
-          payload: { msg: error.response.data.msg },
-        });
-      }
+      console.log(error.response);
     }
-    setTimeout(() => {
-      dispatch({
-        type: CLEAR_ALERT,
-      });
-    }, 1800);
   };
 
   return (
