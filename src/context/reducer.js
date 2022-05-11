@@ -13,6 +13,9 @@ import {
   SETUP_USER_ERROR,
   TOGGLE_SIDEBAR,
   LOGOUT_USER,
+  UPDATE_USER_BEGIN,
+  UPDATE_USER_SUCCESS,
+  UPDATE_USER_ERROR,
 } from "./actions";
 
 import { initialState } from "./appContext";
@@ -140,7 +143,7 @@ const reducer = (state, action) => {
   if (action.type === UPDATE_USER_BEGIN) {
     return { ...state, isLoading: true };
   }
-  
+
   if (action.type === UPDATE_USER_SUCCESS) {
     return {
       ...state,

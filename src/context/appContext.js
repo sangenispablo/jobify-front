@@ -69,9 +69,9 @@ const AppProvider = ({ children }) => {
       return response;
     },
     (error) => {
-      console.log(error.response);
+      // console.log(error.response);
       if (error.response.status === 401) {
-        console.log("AUTH ERROR");
+        logoutUser();
       }
       return Promise.reject(error);
     }
@@ -89,15 +89,21 @@ const AppProvider = ({ children }) => {
     }, 1800);
   };
 
-  const addUserLocalStorage = ({ user, token, location }) => {
+  const clearAlert = () => {
+    setTimeout(() => {
+      dispatch({ type: CLEAR_ALERT });
+    }, 2000);
+  };
+
+  const addUserToLocalStorage = ({ user, token, location }) => {
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("token", token);
     localStorage.setItem("location", location);
   };
 
-  const removeUserLocalStorage = () => {
-    localStorage.removeItem("user");
+  const removeUserFromLocalStorage = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     localStorage.removeItem("location");
   };
 
@@ -112,7 +118,7 @@ const AppProvider = ({ children }) => {
         payload: { user, token, location },
       });
       // guardo en el LS los datos del usuario y del contexto
-      addUserLocalStorage({ user, token, location });
+      addUserToLocalStorage({ user, token, location });
     } catch (error) {
       console.log(error.response);
       dispatch({
@@ -120,11 +126,7 @@ const AppProvider = ({ children }) => {
         payload: { msg: error.response.data.msg },
       });
     }
-    setTimeout(() => {
-      dispatch({
-        type: CLEAR_ALERT,
-      });
-    }, 1800);
+    clearAlert();
   };
 
   const loginUser = async (currentUser) => {
@@ -138,18 +140,14 @@ const AppProvider = ({ children }) => {
         payload: { user, token, location },
       });
       // guardo en el LS los datos del usuario y del contexto
-      addUserLocalStorage({ user, token, location });
+      addUserToLocalStorage({ user, token, location });
     } catch (error) {
       dispatch({
         type: LOGIN_USER_ERROR,
         payload: { msg: error.response.data.msg },
       });
     }
-    setTimeout(() => {
-      dispatch({
-        type: CLEAR_ALERT,
-      });
-    }, 1800);
+    clearAlert();
   };
 
   const setupUser = async (currentUser, endPoint, alertText) => {
@@ -166,23 +164,19 @@ const AppProvider = ({ children }) => {
         payload: { user, token, location, alertText },
       });
       // guardo en el LS los datos del usuario y del contexto
-      addUserLocalStorage({ user, token, location });
+      addUserToLocalStorage({ user, token, location });
     } catch (error) {
       dispatch({
         type: SETUP_USER_ERROR,
         payload: { msg: error.response.data.msg },
       });
     }
-    setTimeout(() => {
-      dispatch({
-        type: CLEAR_ALERT,
-      });
-    }, 1800);
+    clearAlert();
   };
 
   const logoutUser = () => {
     dispatch({ type: LOGOUT_USER });
-    removeUserLocalStorage();
+    removeUserFromLocalStorage();
   };
 
   const toggleSidebar = () => {
@@ -190,12 +184,26 @@ const AppProvider = ({ children }) => {
   };
 
   const updateUser = async (currentUser) => {
+    dispatch({ type: UPDATE_USER_BEGIN });
     try {
       const { data } = await authFetch.put("/auth/updateUser", currentUser);
-      console.log(data);
+
+      const { user, location, token } = data;
+
+      dispatch({
+        type: UPDATE_USER_SUCCESS,
+        payload: { user, location, token },
+      });
+      addUserToLocalStorage({ user, location, token });
     } catch (error) {
-      console.log(error.response);
+      if (error.response.status !== 401) {
+        dispatch({
+          type: UPDATE_USER_ERROR,
+          payload: { msg: error.response.data.msg },
+        });
+      }
     }
+    clearAlert();
   };
 
   return (
